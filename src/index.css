@@ -1,1 +1,6 @@
 @import 'resetDefaults.css';
+
+.react-crop-container {
+    display: flex;
+    justify-content: center;
+}
