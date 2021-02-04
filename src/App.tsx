@@ -1,135 +1,135 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import ReactCrop from 'react-image-crop';
+import React, { useState } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
+import { Crop, CropComponent } from './components';
+import ProductSelectExample from './images/ProductSelectExample.jpg';
+import DoneIcon from '@material-ui/icons/Done';
 
-interface Crop {
-    unit: '%' | 'px';
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
-type InitializeCrop = Partial<Crop>;
+const IMAGE_CROPPING_STEPS = {
+    UPLOAD_IMAGE: 'uploadImage',
+    SELECT_PRODUCTS_EXPLANATION: 'selectProductExplanation',
+    SELECT_PRODUCTS: 'selectProducts',
+    SELECT_PRICES_EXPLANATION: 'selectPricesExplanation',
+    SELECT_PRICES: 'selectPrices',
+};
 
-function generateDownload(canvas: HTMLCanvasElement, crop: Crop) {
-    if (!crop || !canvas) {
-        return;
-    }
-
-    canvas.toBlob(
-        (blob: unknown) => {
-            const previewUrl = window.URL.createObjectURL(blob);
-
-            const anchor = document.createElement('a');
-            anchor.download = 'cropPreview.png';
-            anchor.href = URL.createObjectURL(blob);
-            anchor.click();
-
-            window.URL.revokeObjectURL(previewUrl);
-        },
-        'image/png',
-        1,
-    );
-}
+// Array with the steps values in order
+const IMAGE_CROPPING_STEPS_ARRAY = Object.entries(IMAGE_CROPPING_STEPS).map(([, value]) => value);
 
 export default function App(): React.ReactElement {
-    const [upImg, setUpImg] = useState<ArrayBuffer | string | null>();
-    const [image, setImage] = useState<HTMLImageElement>();
-    const previewCanvasRef = useRef(null);
-    const [crop, setCrop] = useState<InitializeCrop>({ unit: '%', width: 30, height: 30 });
-    const [currentCrop, setCurrentCrop] = useState<Crop>();
+    const [currentStep, setCurrentStep] = useState(0);
+    const [uploadedImage, setUploadedImage] = useState<ArrayBuffer | string | null>(null);
     const [cropArray, setCropArray] = useState<Crop[]>([]);
+    const [endCropping, setEndCropping] = useState(false);
+    const [currentCrop, setCurrentCrop] = useState<Crop>();
 
     const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const reader: FileReader = new FileReader();
-            reader.addEventListener('load', () => setUpImg(reader.result));
+            reader.addEventListener('load', () => setUploadedImage(reader.result));
             reader.readAsDataURL(e.target.files[0]);
+            setCurrentStep(currentStep + 1);
         }
     };
 
-    const initiateNewCrop = () => {
+    const onProductsSelected = () => {
         setCropArray([...cropArray, { ...currentCrop! }]);
-        setCrop({ unit: '%', width: 30, height: 30, x: 50 });
+        setCurrentStep(currentStep + 1);
     };
 
-    const onLoad = useCallback((img) => {
-        setImage(img);
-    }, []);
+    const onCropFinished = () => {
+        setEndCropping(true);
+    };
 
-    useEffect(() => {
-        if (!currentCrop || !previewCanvasRef.current || !image) {
-            return;
-        }
+    const onEditedImage = (editedImage: HTMLCanvasElement) => {
+        editedImage.toBlob(
+            (blob: unknown) => {
+                const previewUrl = window.URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.download = 'cropPreview.png';
+                anchor.href = URL.createObjectURL(blob);
+                anchor.click();
 
-        const canvas: HTMLCanvasElement = previewCanvasRef.current!;
+                window.URL.revokeObjectURL(previewUrl);
+            },
+            'image/png',
+            1,
+        );
+    };
 
-        const scaleX = image.naturalWidth / image.width;
-        const scaleY = image.naturalHeight / image.height;
-        const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
-        const pixelRatio = window.devicePixelRatio;
+    const step = IMAGE_CROPPING_STEPS_ARRAY[currentStep];
 
-        canvas.width = Math.round(image.width! * pixelRatio);
-        canvas.height = Math.round(image.height! * pixelRatio);
-        ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-        ctx.fillRect(0, 0, image.width * scaleX, image.height * scaleY);
-        ctx.imageSmoothingQuality = 'high';
-
-        cropArray.forEach((crop: Crop) => {
-            ctx.drawImage(
-                image,
-                crop.x * scaleX,
-                crop.y * scaleY,
-                crop.width * scaleX,
-                crop.height * scaleY,
-                crop.x,
-                crop.y,
-                crop.width,
-                crop.height,
-            );
-        });
-    }, [cropArray, image]);
-
-    return (
-        <div className="App">
-            <div>
-                <input type="file" accept="image/*" onChange={onSelectFile} />
-            </div>
-            <div className="react-crop-container">
-                <ReactCrop
-                    key={cropArray.length}
-                    imageStyle={{ maxWidth: '100%', maxHeight: '80vh' }}
-                    src={upImg}
-                    onImageLoaded={onLoad}
-                    crop={crop}
-                    onChange={(c: Crop) => setCrop(c)}
-                    onComplete={(c: Crop) => setCurrentCrop(c)}
+    if (step === IMAGE_CROPPING_STEPS.UPLOAD_IMAGE) {
+        return (
+            <main className="main-select-file">
+                <h1>Upload a picture of your bill</h1>
+                <label htmlFor="files" className="button">
+                    Select Image
+                </label>
+                <input
+                    id="files"
+                    style={{ visibility: 'hidden' }}
+                    type="file"
+                    accept="image/*"
+                    onChange={onSelectFile}
                 />
-            </div>
-            <div>
-                <canvas
-                    ref={previewCanvasRef}
-                    // Rounding is important so the canvas width and height matches/is a multiple for sharpness.
-                    style={{
-                        width: Math.round(image?.width ?? 0),
-                        height: Math.round(image?.height ?? 0),
-                    }}
-                />
-            </div>
-            <button
-                type="button"
-                disabled={!(currentCrop && (currentCrop.width || currentCrop.height))}
-                onClick={() => initiateNewCrop()}
-            >
-                Select Prices
-            </button>
-            <button
-                type="button"
-                disabled={!(currentCrop && (currentCrop.width || currentCrop.height))}
-                onClick={() => generateDownload(previewCanvasRef.current!, currentCrop!)}
-            >
-                Download cropped image
-            </button>
-        </div>
-    );
+            </main>
+        );
+    }
+
+    if (step === IMAGE_CROPPING_STEPS.SELECT_PRODUCTS_EXPLANATION) {
+        return (
+            <main className="main-crop-example">
+                {<h1>Crop the area with only the list of products</h1>}
+                <div className="example-page-content">
+                    <div className="example-container">
+                        <img className="image" src={ProductSelectExample} alt="Example of product selection" />
+                        <p>Example of how to crop the products column</p>
+                    </div>
+                    <button className="button" onClick={() => setCurrentStep(currentStep + 1)}>
+                        Crop Products{'   '} ➜
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    if (step === IMAGE_CROPPING_STEPS.SELECT_PRODUCTS || step === IMAGE_CROPPING_STEPS.SELECT_PRICES) {
+        const onDoneClicked = step === IMAGE_CROPPING_STEPS.SELECT_PRODUCTS ? onProductsSelected : onCropFinished;
+        return (
+            <main className="main-crop-cropping">
+                <CropComponent
+                    className="crop-component"
+                    uploadedImage={uploadedImage}
+                    endCropping={endCropping}
+                    onEditedImage={onEditedImage}
+                    cropArray={cropArray}
+                    setCropArray={setCropArray}
+                    currentCrop={currentCrop}
+                    setCurrentCrop={setCurrentCrop}
+                ></CropComponent>
+                <button className="finsh-crop-button" onClick={onDoneClicked}>
+                    <DoneIcon></DoneIcon>
+                </button>
+            </main>
+        );
+    }
+
+    if (step === IMAGE_CROPPING_STEPS.SELECT_PRICES_EXPLANATION) {
+        return (
+            <main className="main-crop-example">
+                {<h1>Crop the area with only the list of Prices</h1>}
+                <div className="example-page-content">
+                    <div className="example-container">
+                        <img className="image" src={ProductSelectExample} alt="Example of prices selection" />
+                        <p>Example of how to crop the prices column</p>
+                    </div>
+                    <button className="button" onClick={() => setCurrentStep(currentStep + 1)}>
+                        Crop Prices{'   '} ➜
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    return <></>;
 }
