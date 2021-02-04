@@ -1,0 +1,67 @@
+.ReactCrop__drag-handle::after {
+    background: unset;
+    color: unset;
+    border: unset;
+}
+
+.ReactCrop .ord-nw,
+.ReactCrop .ord-ne,
+.ReactCrop .ord-sw,
+.ReactCrop .ord-se {
+    margin: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.ReactCrop .ord-nw::after,
+.ReactCrop .ord-ne::after,
+.ReactCrop .ord-sw::after,
+.ReactCrop .ord-se::after {
+    content: '';
+    position: absolute;
+    display: block;
+    height: 100%;
+    width: 100%;
+    clip-path: circle(20% at 50% 50%);
+    background: hsla(175, 100%, 100%, 0.5);
+}
+
+.ReactCrop .ord-nw::before,
+.ReactCrop .ord-ne::before,
+.ReactCrop .ord-sw::before,
+.ReactCrop .ord-se::before {
+    content: '';
+    position: relative;
+    display: block;
+    height: 100%;
+    width: 100%;
+    clip-path: circle(25% at 50% 50%);
+    background: hsla(175, 100%, 28%, 0.5);
+}
+
+.ReactCrop .ord-nw {
+    top: -15px;
+    left: -15px;
+}
+
+.ReactCrop .ord-ne {
+    top: -15px;
+    right: -15px;
+}
+
+.ReactCrop .ord-sw {
+    bottom: -15px;
+    left: -15px;
+}
+
+.ReactCrop .ord-se {
+    bottom: -15px;
+    right: -15px;
+}
+
+.ReactCrop__crop-selection {
+    box-sizing: content-box;
+    border-image: unset;
+    border-color: hsl(175, 100%, 37%);
+    border-width: 2px;
+}
