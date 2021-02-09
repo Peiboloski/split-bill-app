@@ -37,29 +37,29 @@ export default function CropComponent({
         }
 
         const canvas: HTMLCanvasElement = document.createElement('canvas');
-
-        const scaleX = image.naturalWidth / image.width;
-        const scaleY = image.naturalHeight / image.height;
         const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
         const pixelRatio = window.devicePixelRatio;
 
-        canvas.width = Math.round(image.width! * pixelRatio);
-        canvas.height = Math.round(image.height! * pixelRatio);
-        ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-        ctx.fillRect(0, 0, image.width * scaleX, image.height * scaleY);
+        canvas.width = Math.round(image.naturalWidth! * pixelRatio);
+        canvas.height = Math.round(image.naturalHeight! * pixelRatio);
+        ctx.fillRect(0, 0, image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio);
         ctx.imageSmoothingQuality = 'high';
 
+        currentCrop.pixelRatio = pixelRatio;
+        currentCrop.scaleX = image.naturalWidth / image.width;
+        currentCrop.scaleY = image.naturalHeight / image.height;
         [...cropArray, currentCrop].forEach((crop: Crop) => {
+            ctx.setTransform(crop.pixelRatio!, 0, 0, crop.pixelRatio!, 0, 0);
             ctx.drawImage(
                 image,
-                crop.x * scaleX,
-                crop.y * scaleY,
-                crop.width * scaleX,
-                crop.height * scaleY,
-                crop.x,
-                crop.y,
-                crop.width,
-                crop.height,
+                crop.x * crop.scaleX,
+                crop.y * crop.scaleY,
+                crop.width * crop.scaleX,
+                crop.height * crop.scaleY,
+                crop.x * crop.scaleX,
+                crop.y * crop.scaleY,
+                crop.width * crop.scaleX,
+                crop.height * crop.scaleY,
             );
         });
 
@@ -72,6 +72,16 @@ export default function CropComponent({
         setCrop({ unit: '%', width: 30, height: 30, x: 50 });
     };
 
+    const onCropComplete = (crop: Crop) => {
+        if (image) {
+            crop.pixelRatio = window.devicePixelRatio;
+            crop.scaleX = image!.naturalWidth / image!.width;
+            crop.scaleY = image!.naturalHeight / image!.height;
+        }
+
+        setCurrentCrop(crop);
+    };
+
     return (
         <ReactCrop
             key={cropArray.length}
@@ -80,7 +90,7 @@ export default function CropComponent({
             onImageLoaded={onLoad}
             crop={crop}
             onChange={(c: Crop) => setCrop(c)}
-            onComplete={(c: Crop) => setCurrentCrop(c)}
+            onComplete={(c: Crop) => onCropComplete(c)}
             keepSelection
             className={className}
         />
