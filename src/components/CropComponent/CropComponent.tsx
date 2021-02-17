@@ -42,6 +42,7 @@ export default function CropComponent({
 
         canvas.width = Math.round(image.naturalWidth! * pixelRatio);
         canvas.height = Math.round(image.naturalHeight! * pixelRatio);
+        ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio);
         ctx.imageSmoothingQuality = 'high';
 

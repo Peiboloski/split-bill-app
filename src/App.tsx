@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Crop, CropComponent } from './components';
 import ProductSelectExample from './images/ProductSelectExample.jpg';
 import DoneIcon from '@material-ui/icons/Done';
+
+import { FirebaseContext } from './firebase';
 
 const IMAGE_CROPPING_STEPS = {
     UPLOAD_IMAGE: 'uploadImage',
@@ -21,6 +23,8 @@ export default function App(): React.ReactElement {
     const [cropArray, setCropArray] = useState<Crop[]>([]);
     const [endCropping, setEndCropping] = useState(false);
     const [currentCrop, setCurrentCrop] = useState<Crop>();
+
+    const firebaseContext = useContext(FirebaseContext);
 
     const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -41,19 +45,11 @@ export default function App(): React.ReactElement {
     };
 
     const onEditedImage = (editedImage: HTMLCanvasElement) => {
-        editedImage.toBlob(
-            (blob: unknown) => {
-                const previewUrl = window.URL.createObjectURL(blob);
-                const anchor = document.createElement('a');
-                anchor.download = 'cropPreview.png';
-                anchor.href = URL.createObjectURL(blob);
-                anchor.click();
-
-                window.URL.revokeObjectURL(previewUrl);
-            },
-            'image/png',
-            1,
-        );
+        const base64EncodedImage = editedImage.toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
+        //TODO: Reduce file quality when image is too big
+        firebaseContext.functions
+            .httpsCallable('processBillVisionAPI')({ fileUrlObject: base64EncodedImage! })
+            .then((result) => console.log(result));
     };
 
     const step = IMAGE_CROPPING_STEPS_ARRAY[currentStep];
