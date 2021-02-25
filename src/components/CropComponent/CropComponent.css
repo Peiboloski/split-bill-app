@@ -60,7 +60,7 @@
 }
 
 .ReactCrop__crop-selection {
-    box-sizing: content-box;
+    box-sizing: border-box;
     border-image: unset;
     border-color: hsl(175, 100%, 37%);
     border-width: 2px;

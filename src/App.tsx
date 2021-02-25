@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Crop, CropComponent } from './components';
 import ProductSelectExample from './images/ProductSelectExample.jpg';
 import DoneIcon from '@material-ui/icons/Done';
+import { FirebaseContext } from './firebase';
 
 const IMAGE_CROPPING_STEPS = {
     UPLOAD_IMAGE: 'uploadImage',
@@ -22,6 +23,8 @@ export default function App(): React.ReactElement {
     const [endCropping, setEndCropping] = useState(false);
     const [currentCrop, setCurrentCrop] = useState<Crop>();
 
+    const firebaseContext = useContext(FirebaseContext);
+
     const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const reader: FileReader = new FileReader();
@@ -40,20 +43,16 @@ export default function App(): React.ReactElement {
         setEndCropping(true);
     };
 
-    const onEditedImage = (editedImage: HTMLCanvasElement) => {
-        editedImage.toBlob(
-            (blob: unknown) => {
-                const previewUrl = window.URL.createObjectURL(blob);
-                const anchor = document.createElement('a');
-                anchor.download = 'cropPreview.png';
-                anchor.href = URL.createObjectURL(blob);
-                anchor.click();
-
-                window.URL.revokeObjectURL(previewUrl);
-            },
-            'image/png',
-            1,
-        );
+    const onEditedImage = (editedImages: HTMLCanvasElement[]) => {
+        const productsUrlObject = editedImages[0].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
+        const pricesUrlObject = editedImages[1].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
+        //TODO: Reduce file quality when image is too big
+        firebaseContext.functions
+            .httpsCallable('processBillVisionAPI')({
+                productsUrlObject: productsUrlObject,
+                pricesUrlObject: pricesUrlObject,
+            })
+            .then((result) => console.log(result));
     };
 
     const step = IMAGE_CROPPING_STEPS_ARRAY[currentStep];

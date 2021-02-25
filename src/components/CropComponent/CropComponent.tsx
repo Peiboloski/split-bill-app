@@ -7,7 +7,7 @@ import type { Crop, InitializeCrop } from './types';
 interface CropComponentProps {
     uploadedImage: ArrayBuffer | string | null;
     endCropping: boolean;
-    onEditedImage(editedImage: HTMLCanvasElement): void;
+    onEditedImage(editedImageArray: HTMLCanvasElement[]): void;
     className?: string;
     cropArray: Crop[];
     setCropArray(cropArray: Crop[]): void;
@@ -36,34 +36,34 @@ export default function CropComponent({
             return;
         }
 
-        const canvas: HTMLCanvasElement = document.createElement('canvas');
-        const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
-        const pixelRatio = window.devicePixelRatio;
+        const editedImageArray: HTMLCanvasElement[] = [];
 
-        canvas.width = Math.round(image.naturalWidth! * pixelRatio);
-        canvas.height = Math.round(image.naturalHeight! * pixelRatio);
-        ctx.fillRect(0, 0, image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio);
-        ctx.imageSmoothingQuality = 'high';
-
-        currentCrop.pixelRatio = pixelRatio;
+        currentCrop.pixelRatio = window.devicePixelRatio;
         currentCrop.scaleX = image.naturalWidth / image.width;
         currentCrop.scaleY = image.naturalHeight / image.height;
         [...cropArray, currentCrop].forEach((crop: Crop) => {
+            const canvas: HTMLCanvasElement = document.createElement('canvas');
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d')!;
+
+            canvas.width = Math.ceil(crop.width! * crop.scaleX * crop.pixelRatio);
+            canvas.height = Math.ceil(crop.height! * crop.scaleY * crop.pixelRatio);
             ctx.setTransform(crop.pixelRatio!, 0, 0, crop.pixelRatio!, 0, 0);
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(
                 image,
                 crop.x * crop.scaleX,
                 crop.y * crop.scaleY,
-                crop.width * crop.scaleX,
-                crop.height * crop.scaleY,
-                crop.x * crop.scaleX,
-                crop.y * crop.scaleY,
-                crop.width * crop.scaleX,
-                crop.height * crop.scaleY,
+                crop.width! * crop.scaleX,
+                crop.height! * crop.scaleY,
+                0,
+                0,
+                crop.width! * crop.scaleX,
+                crop.height! * crop.scaleY,
             );
+            editedImageArray.push(canvas);
         });
 
-        onEditedImage(canvas);
+        onEditedImage(editedImageArray);
         resetComponent();
     }, [endCropping]);
 
