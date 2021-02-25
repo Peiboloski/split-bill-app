@@ -1,9 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState, useContext } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Crop, CropComponent } from './components';
 import ProductSelectExample from './images/ProductSelectExample.jpg';
 import DoneIcon from '@material-ui/icons/Done';
-
 import { FirebaseContext } from './firebase';
 
 const IMAGE_CROPPING_STEPS = {
@@ -44,11 +43,15 @@ export default function App(): React.ReactElement {
         setEndCropping(true);
     };
 
-    const onEditedImage = (editedImage: HTMLCanvasElement) => {
-        const base64EncodedImage = editedImage.toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
+    const onEditedImage = (editedImages: HTMLCanvasElement[]) => {
+        const productsUrlObject = editedImages[0].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
+        const pricesUrlObject = editedImages[1].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
         //TODO: Reduce file quality when image is too big
         firebaseContext.functions
-            .httpsCallable('processBillVisionAPI')({ fileUrlObject: base64EncodedImage! })
+            .httpsCallable('processBillVisionAPI')({
+                productsUrlObject: productsUrlObject,
+                pricesUrlObject: pricesUrlObject,
+            })
             .then((result) => console.log(result));
     };
 
