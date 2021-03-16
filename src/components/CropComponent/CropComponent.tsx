@@ -10,7 +10,6 @@ interface CropComponentProps {
     onEditedImage(editedImageArray: HTMLCanvasElement[]): void;
     className?: string;
     cropArray: Crop[];
-    setCropArray(cropArray: Crop[]): void;
     currentCrop: Crop | undefined;
     setCurrentCrop(crop: Crop): void;
 }
@@ -20,7 +19,6 @@ export default function CropComponent({
     className = '',
     onEditedImage,
     cropArray,
-    setCropArray,
     currentCrop,
     setCurrentCrop,
 }: CropComponentProps): React.ReactElement {
@@ -64,13 +62,7 @@ export default function CropComponent({
         });
 
         onEditedImage(editedImageArray);
-        resetComponent();
     }, [endCropping]);
-
-    const resetComponent = () => {
-        setCropArray([]);
-        setCrop({ unit: '%', width: 30, height: 30, x: 50 });
-    };
 
     const onCropComplete = (crop: Crop) => {
         if (image) {
