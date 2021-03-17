@@ -8,6 +8,7 @@ import {
     SelectFilePage,
     SelectPricesExplanationPage,
     SelectProductsExplanationPage,
+    SplitBillPage,
 } from './pages';
 
 export default function App(): React.ReactElement {
@@ -30,6 +31,7 @@ export default function App(): React.ReactElement {
                     <Route path={ROUTES.SELECT_PRICES}>
                         <CropPage column={CropPageColumnsEnum.PRICES}></CropPage>
                     </Route>
+                    <Route path={ROUTES.SPLIT_BILL} component={SplitBillPage}></Route>
                     <Route path={'/'}>
                         <Redirect to={ROUTES.SELECT_FILE}></Redirect>
                     </Route>
