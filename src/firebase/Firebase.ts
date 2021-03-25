@@ -15,6 +15,5 @@ export default class Firebase {
     constructor() {
         firebase.initializeApp(firebaseConfig);
         this.functions = firebase.functions();
-        this.functions.useEmulator('localhost', 5001);
     }
 }

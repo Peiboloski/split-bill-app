@@ -54,8 +54,9 @@ export default function EditParticipantsDialog({
             <Dialog
                 open={open}
                 aria-labelledby="edit-participants-dialog-title"
-                aria-aria-describedby="edit-participants-dialog-description"
+                aria-describedby="edit-participants-dialog-description"
                 fullWidth
+                scroll={'body'}
             >
                 <DialogTitle id="edit-participants-dialog-title">Edit Participants</DialogTitle>
                 <DialogContent>

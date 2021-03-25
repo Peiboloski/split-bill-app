@@ -38,9 +38,17 @@ export default function CropPage({ column }: CropPageProps): React.ReactElement 
 
     const onEditedImage = (editedImages: HTMLCanvasElement[]) => {
         setLoading(true);
-        const productsUrlObject = editedImages[0].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
-        const pricesUrlObject = editedImages[1].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
-        //TODO: Reduce file quality when image is too big
+        const calculateImageCompression = (image: HTMLCanvasElement) => {
+            const k = 1.11 * Math.pow(10, -6);
+            //return 1 - k*width*height or 0 if the result is negative
+            return Math.max(0, parseFloat((1 - k * image.width * image.height).toFixed(2)));
+        };
+        const productsUrlObject = editedImages[0]
+            .toDataURL('image/jpeg', calculateImageCompression(editedImages[0]))
+            .replace('data:image/jpeg;base64,', '');
+        const pricesUrlObject = editedImages[1]
+            .toDataURL('image/jpeg', calculateImageCompression(editedImages[1]))
+            .replace('data:image/jpeg;base64,', '');
         firebaseContext.functions
             .httpsCallable('processBillVisionAPI')({
                 productsUrlObject: productsUrlObject,
