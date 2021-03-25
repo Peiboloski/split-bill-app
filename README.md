@@ -1,6 +1,8 @@
-# Getting Started with Create React App
+# Split the bill app
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Web app to split a bill (supermarket, restaurant ...) betwen your friends. Just upload a picture of the bill and split its items between your friends.
+
+![](/readmeFiles/demo.gif)
 
 ## Available Scripts
 
