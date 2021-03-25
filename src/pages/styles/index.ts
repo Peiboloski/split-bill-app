@@ -11,7 +11,7 @@ interface MainProps {
 }
 export const Main = styled.main<MainProps & React.HTMLProps<HTMLElement>>`
     margin: auto;
-    max-width: 800px;
+    max-width: 1000px;
     background: ${({ transparent }) => (transparent ? 'transparent' : '#eceff1')};
 `;
 
@@ -20,6 +20,7 @@ interface SectionProps {
     isCrop?: boolean;
 }
 export const Section = styled.section<SectionProps & React.HTMLProps<HTMLElement>>`
+    width: 100%;
     display: flex;
     flex-direction: column;
     min-height: 100vh;

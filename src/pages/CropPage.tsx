@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Crop, CropComponent } from '../components';
 import { CropBillDispatchContext, CropBillStateContext } from '../context/CropBillContext';
@@ -6,6 +6,7 @@ import DoneIcon from '@material-ui/icons/Done';
 import { ROUTES } from '../routes';
 import { FirebaseContext } from '../firebase';
 import { CropButton, Main, Section } from './styles';
+import { FullPageSpinner } from '../components/FullPageSpinner';
 
 export enum CropPageColumnsEnum {
     PRODUCTS,
@@ -14,11 +15,13 @@ export enum CropPageColumnsEnum {
 export interface CropPageProps {
     column: CropPageColumnsEnum;
 }
+
 export default function CropPage({ column }: CropPageProps): React.ReactElement {
     const history = useHistory();
     const dispatch = useContext(CropBillDispatchContext)!;
     const { uploadedImage, cropArray, endCropping, currentCrop } = useContext(CropBillStateContext)!;
     const firebaseContext = useContext(FirebaseContext);
+    const [loading, setLoading] = useState(false);
 
     const onProductsSelected = () => {
         dispatch({ type: 'pushCurrentCropToCropArray' });
@@ -34,15 +37,24 @@ export default function CropPage({ column }: CropPageProps): React.ReactElement 
     };
 
     const onEditedImage = (editedImages: HTMLCanvasElement[]) => {
-        const productsUrlObject = editedImages[0].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
-        const pricesUrlObject = editedImages[1].toDataURL('image/jpeg', 1).replace('data:image/jpeg;base64,', '');
-        //TODO: Reduce file quality when image is too big
+        setLoading(true);
+        const calculateImageCompression = (image: HTMLCanvasElement) => {
+            const k = 1.11 * Math.pow(10, -6);
+            //return 1 - k*width*height or 0 if the result is negative
+            return Math.max(0, parseFloat((1 - k * image.width * image.height).toFixed(2)));
+        };
+        const productsUrlObject = editedImages[0]
+            .toDataURL('image/jpeg', calculateImageCompression(editedImages[0]))
+            .replace('data:image/jpeg;base64,', '');
+        const pricesUrlObject = editedImages[1]
+            .toDataURL('image/jpeg', calculateImageCompression(editedImages[1]))
+            .replace('data:image/jpeg;base64,', '');
         firebaseContext.functions
             .httpsCallable('processBillVisionAPI')({
                 productsUrlObject: productsUrlObject,
                 pricesUrlObject: pricesUrlObject,
             })
-            .then((result) => console.log(result));
+            .then((result) => history.push(ROUTES.SPLIT_BILL, result.data));
     };
 
     const onDoneClicked = column === CropPageColumnsEnum.PRODUCTS ? onProductsSelected : onCropFinished;
@@ -61,6 +73,7 @@ export default function CropPage({ column }: CropPageProps): React.ReactElement 
                     <DoneIcon></DoneIcon>
                 </CropButton>
             </Section>
+            {loading && <FullPageSpinner></FullPageSpinner>}
         </Main>
     );
 }
