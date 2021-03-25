@@ -207,10 +207,13 @@ export default function SplitBillPage({ location }: RouteComponentProps): React.
                                     onChange={handleAccordionChange(productIndex)}
                                     expanded={accordionExpanded === productIndex}
                                     elevation={1}
-                                    aria-labelby={'bill-product-description'+product.name}
+                                    aria-labelby={'bill-product-description' + product.name}
                                     style={{ margin: '10px', borderRadius: '4px', border: 'none' }}
                                 >
-                                    <StyledAccordionDescription id={'bill-product-description'+product.name} expandIcon={<ExpandMoreIcon />}>
+                                    <StyledAccordionDescription
+                                        id={'bill-product-description' + product.name}
+                                        expandIcon={<ExpandMoreIcon />}
+                                    >
                                         <div>
                                             <AccordionDescriptionProduct>{product.name}</AccordionDescriptionProduct>
                                             <AccordionDescriptionPrice>

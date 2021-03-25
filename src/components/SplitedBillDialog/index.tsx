@@ -13,15 +13,10 @@ export default function SplitedBillDialog({
 }: SplitedBillDialogProps): React.ReactElement {
     return (
         <>
-            <Dialog
-                open={open}
-                aria-labelledby="splited-bill-dialog-title"
-                fullWidth
-                scroll={'body'}
-            >
+            <Dialog open={open} aria-labelledby="splited-bill-dialog-title" fullWidth scroll={'body'}>
                 <DialogTitle id="splited-bill-dialog-title">Splited Bill</DialogTitle>
                 <DialogContent>
-                    <DialogContentText component='ul'>
+                    <DialogContentText component="ul">
                         {participants.map((participant) => {
                             return (
                                 <li key={participant.name}>
