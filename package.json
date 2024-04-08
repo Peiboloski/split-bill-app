@@ -1,6 +1,6 @@
 {
   "engines": {
-    "node": "16.19.1"
+    "node": "v18.19.1"
   },
   "name": "split-bill-app",
   "version": "0.1.0",
@@ -22,6 +22,7 @@
     "firebase-admin": "^9.4.2",
     "firebase-functions": "^3.13.1",
     "immutable": "^4.0.0-rc.12",
+    "lint-staged": "^15.2.2",
     "pre-commit": "^1.2.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
